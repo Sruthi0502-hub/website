@@ -1,0 +1,31 @@
+:root {
+  /* Theme Colors */
+  --black:      #0c0c0c;
+  --white:      #ffffff;
+  --steel:      #1c2b3a;
+  --rust:       #b94a1a;
+  --rust-light: #d4602a;
+  
+  /* Grays */
+  --gray-50:    #f5f5f5;
+  --gray-100:   #ebebeb;
+  --gray-200:   #d4d4d4;
+  --gray-400:   #9a9a9a;
+  --gray-600:   #5c5c5c;
+  
+  /* Typography */
+  --display:    'Barlow Condensed', sans-serif;
+  --body:       'Barlow', sans-serif;
+  
+  /* Layout Dimensions */
+  --nav-h:      68px;
+  --max:        1200px;
+  --radius:     6px;
+  
+  /* Legacy/Layout Helpers */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --spacing-xl: 4.5rem;
+}
