@@ -8,11 +8,11 @@ const Projects = ({ projects, onNavigateDetail }) => {
         <div className="section-eyebrow">Our Work</div>
         <h2 className="section-title">Built in our yard.</h2>
         <p className="section-sub">A look at some of the fabrication work that leaves our facility.</p>
-        
+
         <div className="gallery-grid">
           {projects.map((item) => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className="gallery-item"
               onClick={() => onNavigateDetail(item.id)}
               style={{
@@ -24,7 +24,7 @@ const Projects = ({ projects, onNavigateDetail }) => {
               <div className="gallery-item-inner"></div>
               <div className="gallery-item-label">
                 <span className="project-card-cat" style={{ color: 'var(--rust-light)', display: 'block', fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '2px' }}>
-                  {item.category}
+                  {item.features}
                 </span>
                 {item.title}
               </div>

@@ -49,13 +49,13 @@ const WhyChooseUs = () => {
             Discuss Your Project
           </Button>
         </div>
-        
+
         <div className="why-cards-grid">
           {values.map((val, idx) => (
-            <ChooseCard 
+            <ChooseCard
               key={idx}
               title={val.title}
-              description={val.description}
+              description={val.longDescription}
               iconName={val.iconName}
             />
           ))}

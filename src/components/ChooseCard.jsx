@@ -2,7 +2,7 @@ import React from 'react';
 import * as Icons from 'react-icons/fa';
 import './ChooseCard.css';
 
-const ChooseCard = ({ title, description, iconName }) => {
+const ChooseCard = ({ title, shortDescription, iconName }) => {
   const IconComponent = Icons[iconName] || Icons.FaCheckCircle;
 
   return (
@@ -12,7 +12,7 @@ const ChooseCard = ({ title, description, iconName }) => {
       </div>
       <div className="choose-content">
         <h3 className="choose-title">{title}</h3>
-        <p className="choose-description">{description}</p>
+        <p className="choose-description">{shortDescription}</p>
       </div>
     </div>
   );
