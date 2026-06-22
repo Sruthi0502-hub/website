@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/ServiceDetail.css';
 import { fallbackServices } from '../data/services';
+import { API_BASE_URL } from '../App';
 
 const ServiceDetail = () => {
   const { id } = useParams();
@@ -13,7 +14,7 @@ const ServiceDetail = () => {
     const fetchServiceData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/provideservices/public');
+        const response = await fetch(`${API_BASE_URL}/provideservices/public`);
         if (!response.ok) {
           throw new Error('Network error');
         }
@@ -64,7 +65,7 @@ const ServiceDetail = () => {
   }
 
   const imageUrl = service.images 
-    ? `http://localhost:3000/uploads/${service.images}` 
+    ? `${API_BASE_URL}/uploads/${Array.isArray(service.images) ? service.images[0] : service.images}` 
     : (service.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80');
 
   const titleText = service.title || service.name || 'Untitled Service';

@@ -15,6 +15,8 @@ import { companyInfo as staticCompanyInfo } from './data/companyInfo';
 import { fallbackServices } from './data/services';
 import { projectsData } from './data/projects';
 
+export const API_BASE_URL = "https://dashboard-management-u6vj.onrender.com";
+
 // Home Page Layout Component
 const HomeLayout = ({ companyDetails, services, loadingServices }) => {
   const navigate = useNavigate();
@@ -64,7 +66,7 @@ function App() {
   useEffect(() => {
     const fetchCustomizationData = async () => {
       try {
-        const res = await fetch(`${staticCompanyInfo.apiBase}/customization`);
+        const res = await fetch(`${API_BASE_URL}/customization`);
         if (!res.ok) throw new Error('Failed to fetch customization');
         const json = await res.json();
         const data = json.data || json;
@@ -90,18 +92,27 @@ function App() {
   useEffect(() => {
     const fetchServicesList = async () => {
       try {
-        const res = await fetch('http://localhost:3000/provideservices/public');
+        const res = await fetch(`${API_BASE_URL}/provideservices/public`);
         if (!res.ok) throw new Error('API error');
         const json = await res.json();
         const data = json.data || json;
-        const normalizedData = data.map(s => ({
-          ...s,
-          image: s.images ? `http://localhost:3000/uploads/${s.images}` : (s.image || '')
-        }));
+        const normalizedData = data.map(s => {
+          let imagePath = '';
+          if (s.images) {
+            const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
+            imagePath = `${API_BASE_URL}/uploads/${firstImage}`;
+          } else {
+            imagePath = s.image || '';
+          }
+          return {
+            ...s,
+            image: imagePath
+          };
+        });
         setServices(normalizedData);
       } catch (err) {
-        console.warn('[API PREPARATION] Services API unavailable, loading fallback datasets.');
-        setServices(fallbackServices);
+        //console.warn('[API PREPARATION] Services API unavailable, loading fallback datasets.');
+        // setServices(fallbackServices);
       } finally {
         setLoadingServices(false);
       }
@@ -154,7 +165,6 @@ function App() {
           />
         } />
       </Routes>
-      
       <Footer companyDetails={companyDetails} />
     </div>
   );
