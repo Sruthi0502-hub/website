@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import Navbar from './sections/Navbar';
 import Hero from './sections/Hero';
 import Services from './sections/Services';
@@ -7,17 +8,57 @@ import Projects from './sections/Projects';
 import Contact from './sections/Contact';
 import Footer from './sections/Footer';
 import DetailedView from './sections/DetailedView';
+import ServiceDetail from './sections/ServiceDetail';
 
 // Data imports
 import { companyInfo as staticCompanyInfo } from './data/companyInfo';
 import { fallbackServices } from './data/services';
 import { projectsData } from './data/projects';
 
+// Home Page Layout Component
+const HomeLayout = ({ companyDetails, services, loadingServices }) => {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Hero companyDetails={companyDetails} />
+      <Services 
+        services={services} 
+        loading={loadingServices} 
+        onNavigateDetail={(id) => navigate(`/services/${id}`)} 
+      />
+      <About companyDetails={companyDetails} />
+      <Projects 
+        projects={projectsData} 
+        onNavigateDetail={(id) => navigate(`/projects/${id}`)} 
+      />
+      <Contact companyDetails={companyDetails} services={services} />
+    </>
+  );
+};
+
+// Route wrapper for Project Details
+const ProjectDetailRoute = ({ services, companyDetails }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  return (
+    <DetailedView 
+      itemId={id} 
+      itemType="project" 
+      projects={projectsData}
+      services={services}
+      onBack={() => navigate('/')}
+      apiBase={companyDetails.apiBase}
+    />
+  );
+};
+
 function App() {
-  const [currentView, setCurrentView] = useState({ page: 'home', id: null, type: null });
   const [services, setServices] = useState([]);
   const [loadingServices, setLoadingServices] = useState(true);
   const [companyDetails, setCompanyDetails] = useState(staticCompanyInfo);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // 1. Fetch Dynamic Customization Settings from Admin Dashboard (customization API)
   useEffect(() => {
@@ -28,7 +69,6 @@ function App() {
         const json = await res.json();
         const data = json.data || json;
         
-        // Merge customization payload into companyDetails state
         setCompanyDetails(prev => ({
           ...prev,
           name: data.companyName || prev.name,
@@ -46,17 +86,19 @@ function App() {
     fetchCustomizationData();
   }, []);
 
-  // 2. Fetch Dynamic Services from Admin Dashboard (properties API)
+  // 2. Fetch Dynamic Services from Admin Dashboard
   useEffect(() => {
     const fetchServicesList = async () => {
       try {
-        // Fetch endpoint matching where the admin panel writes to (properties)
-        // Public API exposing services is expected at /api/services
-        const res = await fetch(`${staticCompanyInfo.apiBase}/api/services`);
+        const res = await fetch('http://localhost:3000/provideservices/public');
         if (!res.ok) throw new Error('API error');
         const json = await res.json();
         const data = json.data || json;
-        setServices(data);
+        const normalizedData = data.map(s => ({
+          ...s,
+          image: s.images ? `http://localhost:3000/uploads/${s.images}` : (s.image || '')
+        }));
+        setServices(normalizedData);
       } catch (err) {
         console.warn('[API PREPARATION] Services API unavailable, loading fallback datasets.');
         setServices(fallbackServices);
@@ -68,53 +110,50 @@ function App() {
     fetchServicesList();
   }, []);
 
-  // 3. Navigation handlers
-  const handleNavigateDetail = (id, type) => {
-    setCurrentView({ page: 'detail', id, type });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleNavigateHome = (targetSection = '') => {
-    setCurrentView({ page: 'home', id: null, type: null });
-    if (targetSection) {
+  // 3. Scroll to section when returning to Home Page via navigation state
+  useEffect(() => {
+    if (location.pathname === '/' && location.state?.scrollTo) {
+      const sectionId = location.state.scrollTo;
+      // Clear location state to prevent rescrolling on page reload/navigation
+      window.history.replaceState({}, document.title);
       setTimeout(() => {
-        const el = document.getElementById(targetSection);
+        const el = document.getElementById(sectionId);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 50);
+      }, 150);
     }
-  };
+  }, [location]);
+
+  // Determine view state for navigation highlighting/handling
+  const currentView = location.pathname === '/' ? { page: 'home' } : { page: 'detail' };
 
   return (
     <div className="app">
-      <Navbar onNavigateHome={() => handleNavigateHome()} currentView={currentView} onNavigateSection={handleNavigateHome} />
+      <Navbar 
+        onNavigateHome={() => navigate('/')} 
+        currentView={currentView} 
+        onNavigateSection={(sectionId) => {
+          navigate('/', { state: { scrollTo: sectionId } });
+        }} 
+      />
       
-      {currentView.page === 'home' ? (
-        <>
-          <Hero companyDetails={companyDetails} />
-          <Services 
+      <Routes>
+        <Route path="/" element={
+          <HomeLayout 
+            companyDetails={companyDetails} 
             services={services} 
-            loading={loadingServices} 
-            onNavigateDetail={(id) => handleNavigateDetail(id, 'service')} 
+            loadingServices={loadingServices} 
           />
-          <About companyDetails={companyDetails} />
-          <Projects 
-            projects={projectsData} 
-            onNavigateDetail={(id) => handleNavigateDetail(id, 'project')} 
+        } />
+        <Route path="/services/:id" element={<ServiceDetail />} />
+        <Route path="/projects/:id" element={
+          <ProjectDetailRoute 
+            services={services} 
+            companyDetails={companyDetails} 
           />
-          <Contact companyDetails={companyDetails} services={services} />
-        </>
-      ) : (
-        <DetailedView 
-          itemId={currentView.id} 
-          itemType={currentView.type} 
-          projects={projectsData}
-          services={services}
-          onBack={() => handleNavigateHome()}
-          apiBase={companyDetails.apiBase}
-        />
-      )}
+        } />
+      </Routes>
       
       <Footer companyDetails={companyDetails} />
     </div>
