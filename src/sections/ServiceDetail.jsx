@@ -61,8 +61,8 @@ const ServiceDetail = () => {
     );
   }
 
-  const titleText = service.title || 'Untitled Service';
-  const descText = service.longDescription || 'No description available for this service.';
+  const titleText = service.title;
+  const descText = service.longDescription;
 
   return (
     <div className="service-detail-page">

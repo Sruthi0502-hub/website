@@ -137,10 +137,35 @@ const DetailedView = ({ itemId, itemType, projects, services, onBack }) => {
   const { formData, updateField, handleSubmit, isSubmitting, toast } = useEnquiryForm(titleText);
 
   useEffect(() => {
+    let objectUrl = '';
+
     if (item) {
-      const rawImg = item.image || item.gallery?.[0];
-      setActiveImage(getFullImgUrl(rawImg) || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80');
+      const rawImg = item.images || item.gallery?.[0];
+
+      if (rawImg) {
+        // CASE 1: Agar admin ne nayi file select ki hai (Blob/File Object)
+        if (rawImg instanceof Blob || rawImg instanceof File) {
+          objectUrl = URL.createObjectURL(rawImg);
+          setActiveImage(objectUrl);
+        }
+        // CASE 2: Agar admin ne Base64 format mein data diya hai
+        else if (typeof rawImg === 'string' && rawImg.startsWith('data:image')) {
+          setActiveImage(rawImg);
+        }
+        // CASE 3: Agar backend se pehle se saved filename aa raha hai
+        else {
+          setActiveImage(`${API_BASE_URL}/uploads/${rawImg}`);
+        }
+      } else {
+        // Agar koi image nahi hai, toh state ko null kar do
+        setActiveImage(null);
+      }
     }
+
+    // Cleanup memory
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [item]);
 
   if (!item) {
@@ -155,57 +180,18 @@ const DetailedView = ({ itemId, itemType, projects, services, onBack }) => {
   }
 
   return (
-    <div className="detail-page-wrapper">
-      <Toast toast={toast} />
-
-      <div className="detail-content-container">
-        <div className="section-inner">
-
-          <HeroHeader category={categoryText} meta={{ client: item.client, year: item.year, location: item.location, price: item.price }} onBack={onBack} />
-
-          <div className="main-details-card">
-
-            <div className="card-media-side">
-              <img src={activeImage} alt={titleText} className="card-fluid-img" />
-            </div>
-
-            <div className="card-content-side">
-
-              {item.shortDescription && (
-                <div className="content-block short-desc-block">
-                  <p className="short-description-text">{item.shortDescription}</p>
-                </div>
-              )}
-
-              <div className="content-block">
-                <h3 className="block-title"><FaFileAlt className="info-icon" /> Description</h3>
-                <p className="description-text">{item.longDescription || item.description}</p>
-              </div>
-
-              {item.features && (
-                <div className="content-block">
-                  <h3 className="block-title"><FaTools className="info-icon" /> Key Features</h3>
-                  {Array.isArray(item.features) ? (
-                    <ul className="features-list-items">
-                      {item.features.map((feature, idx) => (
-                        <li key={idx} className="feature-bullet">{feature}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="description-text">{String(item.features)}</p>
-                  )}
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-          <div className="enquiry-wrapper">
-            <EnquirySection itemName={titleText} formData={formData} updateField={updateField} handleSubmit={handleSubmit} isSubmitting={isSubmitting} />
-          </div>
-        </div>
-      </div>
+    <div className="image-container">
+      {/* Agar activeImage hai, tabhi <img> tag screen par aayega, nahi toh kuch nahi dikhega */}
+      {activeImage ? (
+        <img
+          src={activeImage}
+          alt="Service Dynamic Preview"
+          style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+        />
+      ) : (
+        // Agar tum chaho toh yahan koi blank div ya text daal sakte ho, ya ise bhi khali chhod sakte ho
+        <div className="no-image-placeholder">No image uploaded yet</div>
+      )}
     </div>
   );
 };
