@@ -12,7 +12,6 @@ import ServiceDetail from './sections/ServiceDetail';
 
 // Data imports
 import { projectsData } from './data/projects';
-import { fallbackServices } from './data/services';
 
 const defaultCompanyDetails = {
   name: "RRventures",
@@ -133,12 +132,8 @@ function App() {
         });
         setServices(normalizedData);
       } catch (err) {
-        console.warn('[API PREPARATION] Services API unavailable, loading fallback datasets.', err);
-        const normalizedFallback = fallbackServices.map(s => ({
-          ...s,
-          image: s.image || ''
-        }));
-        setServices(normalizedFallback);
+        console.warn('[API PREPARATION] Services API unavailable.', err);
+        setServices([]);
       } finally {
         setLoadingServices(false);
       }

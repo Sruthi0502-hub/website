@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/ServiceDetail.css';
 import { API_BASE_URL } from '../App';
-import { fallbackServices } from '../data/services';
 
 const ServiceDetail = () => {
   const { id } = useParams();
@@ -20,15 +19,11 @@ const ServiceDetail = () => {
         }
         const data = await response.json();
         const servicesList = data.data || data;
-        let found = servicesList.find(s => String(s._id || s.id) === String(id));
-        if (!found) {
-          found = fallbackServices.find(s => String(s._id || s.id) === String(id));
-        }
+        const found = servicesList.find(s => String(s._id || s.id) === String(id));
         setService(found || null);
       } catch (err) {
-        console.error('Error fetching service details, trying fallback: ', err);
-        const found = fallbackServices.find(s => String(s._id || s.id) === String(id));
-        setService(found || null);
+        console.error('Error fetching service details: ', err);
+        setService(null);
       } finally {
         setLoading(false);
       }
@@ -57,7 +52,7 @@ const ServiceDetail = () => {
       <div className="service-detail-state-screen">
         <div className="service-detail-state-card">
           <div className="service-detail-state-icon">🔍</div>
-          <div className="service-detail-state-text">Service not found</div>
+          <div className="service-detail-state-text">Service not found.</div>
           <button className="btn-back-services" onClick={handleBackClick} style={{ marginTop: '16px' }}>
             ← Back to Services
           </button>

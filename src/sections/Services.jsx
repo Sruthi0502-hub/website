@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { fetchServices, fallbackServices } from '../data/services';
 import '../styles/Services.css';
 
 const Services = ({ onNavigateDetail }) => {
@@ -18,10 +17,15 @@ const Services = ({ onNavigateDetail }) => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchServices();
+        const response = await fetch('http://localhost:3000/provideservices/public');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        const servicesList = data.data || data;
         
         // Normalize dynamic API data to ensure correct image path and fields
-        const normalizedData = data.map(s => {
+        const normalizedData = servicesList.map(s => {
           let imagePath = '';
           if (s.images) {
             const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
@@ -38,14 +42,8 @@ const Services = ({ onNavigateDetail }) => {
         setServices(normalizedData);
       } catch (err) {
         console.error('Error fetching services from API:', err);
-        setError('Unable to load services from the backend. Displaying fallback services.');
-        
-        // Keep fallbackServices as backup only if API fails
-        const normalizedFallback = fallbackServices.map(s => ({
-          ...s,
-          image: s.image || ''
-        }));
-        setServices(normalizedFallback);
+        setError('Unable to load services. Please try again later.');
+        setServices([]);
       } finally {
         setLoading(false);
       }
@@ -65,28 +63,16 @@ const Services = ({ onNavigateDetail }) => {
           </p>
         </div>
 
-        {error && (
-          <div className="services-error-banner" style={{
-            background: 'rgba(185, 74, 26, 0.08)',
-            border: '1px solid rgba(185, 74, 26, 0.2)',
-            color: 'var(--rust)',
-            padding: '12px 24px',
-            borderRadius: 'var(--radius)',
-            maxWidth: 'var(--max)',
-            margin: '0 auto 24px auto',
-            textAlign: 'center',
-            fontSize: '14px',
-            fontFamily: 'var(--body)'
-          }}>
-            ⚠️ <strong>Notice:</strong> {error}
-          </div>
-        )}
-
         <div className="services-grid" id="servicesGrid">
           {loading ? (
             <div className="services-loading">
               <div className="services-loading-spinner"></div>
               <span>Loading services...</span>
+            </div>
+          ) : error ? (
+            <div className="services-error" style={{ gridColumn: '1/-1' }}>
+              <div className="services-error-icon">⚠️</div>
+              <span>{error}</span>
             </div>
           ) : services.length === 0 ? (
             <div className="services-error" style={{ gridColumn: '1/-1' }}>
