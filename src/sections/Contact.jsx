@@ -52,9 +52,7 @@ const Contact = ({ companyDetails, services }) => {
       showToast('Enquiry sent! We will get back to you soon.', 'success');
       setFormData({ name: '', phone: '', email: '', service: '', message: '' });
     } catch (err) {
-      // Demo mode fallback
-      showToast('Enquiry received! (Demo mode — backend pending)', 'success');
-      setFormData({ name: '', phone: '', email: '', service: '', message: '' });
+      showToast('Something went wrong. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
