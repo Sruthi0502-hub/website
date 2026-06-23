@@ -61,13 +61,13 @@ const ServiceDetail = () => {
     );
   }
 
-  const imageUrl = service.images 
-    ? `${API_BASE_URL}/uploads/${Array.isArray(service.images) ? service.images[0] : service.images}` 
+  const imageUrl = service.images
+    ? `${API_BASE_URL}/uploads/${Array.isArray(service.images) ? service.images[0] : service.images}`
     : (service.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80');
 
-  const titleText = service.title || service.name || 'Untitled Service';
-  const categoryText = service.category || 'Fabrication';
-  const descText = service.description || service.desc || 'No description available for this service.';
+  const titleText = service.title;
+  const categoryText = service.category;
+  const descText = service.shortDescription;
 
   return (
     <div className="service-detail-page">
@@ -77,11 +77,11 @@ const ServiceDetail = () => {
             ← Back to Services
           </button>
         </div>
-        
+
         <div className="service-detail-image-wrap">
-          <img 
-            src={imageUrl} 
-            alt={titleText} 
+          <img
+            src={imageUrl}
+            alt={titleText}
             className="service-detail-image"
             onError={(e) => {
               e.target.src = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';

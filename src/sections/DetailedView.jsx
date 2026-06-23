@@ -9,7 +9,7 @@ import {
   FaTools,
   FaFileAlt,
 } from 'react-icons/fa';
-import './DetailedView.css'; // Sahi normal import path
+import './DetailedView.css';
 import { API_BASE_URL } from '../App';
 
 const useEnquiryForm = (itemName) => {
@@ -53,7 +53,7 @@ const useEnquiryForm = (itemName) => {
 
 const getFullImgUrl = (imgUrl) => {
   if (!imgUrl) return null;
-  return imgUrl.startsWith('http') ? imgUrl : `${API_BASE_URL}${imgUrl}`;
+  return `${API_BASE_URL}${imgUrl}`;
 };
 
 const Toast = ({ toast }) => {

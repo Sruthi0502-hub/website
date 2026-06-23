@@ -17,19 +17,19 @@ const Services = ({ onNavigateDetail }) => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('http://localhost:3000/provideservices/public');
+        const response = await fetch('https://dashboard-management-u6vj.onrender.com/provideservices/public');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
         const servicesList = data.data || data;
-        
+
         // Normalize dynamic API data to ensure correct image path and fields
         const normalizedData = servicesList.map(s => {
           let imagePath = '';
           if (s.images) {
             const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
-            imagePath = firstImage ? `http://localhost:3000/uploads/${firstImage}` : '';
+            imagePath = firstImage ? `https://dashboard-management-u6vj.onrender.com/uploads/${firstImage}` : '';
           } else {
             imagePath = s.image || '';
           }
@@ -38,7 +38,7 @@ const Services = ({ onNavigateDetail }) => {
             image: imagePath
           };
         });
-        
+
         setServices(normalizedData);
       } catch (err) {
         console.error('Error fetching services from API:', err);
@@ -82,10 +82,10 @@ const Services = ({ onNavigateDetail }) => {
           ) : (
             services.map((s) => {
               const serviceId = s._id || s.id;
-              const serviceTitle = s.title || s.name || 'Untitled Service';
-              const serviceCategory = s.category || 'Fabrication';
-              const serviceDesc = s.shortDescription || s.description || s.desc || '';
-              const imageUrl = s.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80';
+              const serviceTitle = s.title;
+              const serviceCategory = s.category;
+              const serviceDesc = s.shortDescription;
+              const imageUrl = s.images;
 
               return (
                 <div
