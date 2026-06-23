@@ -73,11 +73,11 @@ const Contact = ({ companyDetails, services }) => {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
+          Name: formData.name,
           email: formData.email,
-          service: formData.service,
-          message: formData.message
+          phone: formData.phone,
+          message: formData.message,
+          service: formData.service
         })
       });
 
@@ -191,7 +191,7 @@ const Contact = ({ companyDetails, services }) => {
               >
                 <option value="">Select a service…</option>
                 {localServices.map((s) => (
-                  <option key={s._id || s.id} value={s.title}>{s.title}</option>
+                  <option key={s._id} value={s._id}>{s.title}</option>
                 ))}
               </select>
             </div>
