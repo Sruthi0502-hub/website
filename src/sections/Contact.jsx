@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Contact.css';
+import { API_BASE_URL } from '../App';
 
 const Contact = ({ companyDetails, services }) => {
   const [formData, setFormData] = useState({
@@ -42,7 +43,7 @@ const Contact = ({ companyDetails, services }) => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${companyDetails.apiBase}/api/enquiry`, {
+      const res = await fetch(`${API_BASE_URL}/query/create-query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, email, service, message })

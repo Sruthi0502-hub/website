@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../App';
 import '../styles/Services.css';
 
 const Services = ({ onNavigateDetail }) => {
@@ -17,7 +18,7 @@ const Services = ({ onNavigateDetail }) => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('https://dashboard-management-u6vj.onrender.com/provideservices/public');
+        const response = await fetch(`${API_BASE_URL}/provideservices/public`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -26,16 +27,11 @@ const Services = ({ onNavigateDetail }) => {
 
         // Normalize dynamic API data to ensure correct image path and fields
         const normalizedData = servicesList.map(s => {
-          let imagePath = '';
-          if (s.images) {
-            const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
-            imagePath = firstImage ? `https://dashboard-management-u6vj.onrender.com/uploads/${firstImage}` : '';
-          } else {
-            imagePath = s.image || '';
-          }
           return {
-            ...s,
-            image: imagePath
+            _id: s._id || s.id,
+            title: s.title,
+            shortDescription: s.shortDescription,
+            images: s.images
           };
         });
 
@@ -81,11 +77,10 @@ const Services = ({ onNavigateDetail }) => {
             </div>
           ) : (
             services.map((s) => {
-              const serviceId = s._id || s.id;
-              const serviceTitle = s.title;
-              const serviceCategory = s.category;
-              const serviceDesc = s.shortDescription;
-              const imageUrl = s.images;
+              const serviceId = s._id;
+              const serviceTitle = s.title || 'Untitled Service';
+              const serviceDesc = s.shortDescription || '';
+              const firstImage = s.images?.[0];
 
               return (
                 <div
@@ -95,17 +90,30 @@ const Services = ({ onNavigateDetail }) => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="service-image-container">
-                    <img
-                      src={imageUrl}
-                      alt={serviceTitle}
-                      className="service-card-image"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';
-                      }}
-                    />
+                    {firstImage ? (
+                      <img
+                        src={`${API_BASE_URL}/uploads/${firstImage}`}
+                        alt={serviceTitle}
+                        className="service-card-image"
+                      />
+                    ) : (
+                      <div className="service-card-placeholder" style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: '#e5e7eb',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#9ca3af',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        fontFamily: 'var(--display)'
+                      }}>
+                        No Image
+                      </div>
+                    )}
                   </div>
                   <div className="service-card-content">
-                    <span className="service-category-badge">{serviceCategory}</span>
                     <h3 className="service-title">{serviceTitle}</h3>
                     <p className="service-description">
                       {trimDescription(serviceDesc, 100)}

@@ -61,13 +61,8 @@ const ServiceDetail = () => {
     );
   }
 
-  const imageUrl = service.images
-    ? `${API_BASE_URL}/uploads/${Array.isArray(service.images) ? service.images[0] : service.images}`
-    : (service.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80');
-
-  const titleText = service.title;
-  const categoryText = service.category;
-  const descText = service.shortDescription;
+  const titleText = service.title || 'Untitled Service';
+  const descText = service.longDescription || 'No description available for this service.';
 
   return (
     <div className="service-detail-page">
@@ -78,22 +73,47 @@ const ServiceDetail = () => {
           </button>
         </div>
 
-        <div className="service-detail-image-wrap">
-          <img
-            src={imageUrl}
-            alt={titleText}
-            className="service-detail-image"
-            onError={(e) => {
-              e.target.src = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';
-            }}
-          />
-        </div>
-
         <div className="service-detail-content">
-          <span className="service-detail-badge">{categoryText}</span>
           <h1 className="service-detail-title">{titleText}</h1>
+
+          {service.images && Array.isArray(service.images) && service.images.length > 0 && (
+            <div className="service-detail-gallery" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: '16px',
+              marginTop: '16px',
+              marginBottom: '24px'
+            }}>
+              {service.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={`${API_BASE_URL}/uploads/${image}`}
+                  alt={`${service.title}-${index}`}
+                  style={{
+                    width: '100%',
+                    height: '180px',
+                    objectFit: 'cover',
+                    borderRadius: 'var(--radius)',
+                    border: '1px solid var(--gray-200)'
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="service-detail-divider"></div>
           <p className="service-detail-desc">{descText}</p>
+
+          {service.features && Array.isArray(service.features) && service.features.length > 0 && (
+            <div className="service-detail-features" style={{ marginTop: '24px' }}>
+              <h3 className="features-title" style={{ marginBottom: '12px', fontSize: '18px', color: 'var(--steel)' }}>Key Features</h3>
+              <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
+                {service.features.map((feature, index) => (
+                  <li key={index} style={{ marginBottom: '8px', color: 'var(--gray-700)' }}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
