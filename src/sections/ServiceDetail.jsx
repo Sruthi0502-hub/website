@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/ServiceDetail.css';
-import { fallbackServices } from '../data/services';
 import { API_BASE_URL } from '../App';
+import { fallbackServices } from '../data/services';
 
 const ServiceDetail = () => {
   const { id } = useParams();
@@ -20,13 +20,15 @@ const ServiceDetail = () => {
         }
         const data = await response.json();
         const servicesList = data.data || data;
-        const found = servicesList.find(s => String(s._id || s.id) === String(id));
+        let found = servicesList.find(s => String(s._id || s.id) === String(id));
+        if (!found) {
+          found = fallbackServices.find(s => String(s._id || s.id) === String(id));
+        }
         setService(found || null);
       } catch (err) {
-        console.error('Error fetching service details: ', err);
-        // Fall back to offline static data
-        const foundInFallback = fallbackServices.find(s => String(s._id || s.id) === String(id));
-        setService(foundInFallback || null);
+        console.error('Error fetching service details, trying fallback: ', err);
+        const found = fallbackServices.find(s => String(s._id || s.id) === String(id));
+        setService(found || null);
       } finally {
         setLoading(false);
       }

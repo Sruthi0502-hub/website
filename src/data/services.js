@@ -211,3 +211,12 @@ export const fallbackServices = [
 ];
 
 export const servicesData = fallbackServices;
+
+export const fetchServices = async () => {
+  const response = await fetch('http://localhost:3000/provideservices/public');
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  const json = await response.json();
+  return json.data || json;
+};

@@ -1,12 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchServices, fallbackServices } from '../data/services';
 import '../styles/Services.css';
 
-const Services = ({ services, loading, onNavigateDetail }) => {
+const Services = ({ onNavigateDetail }) => {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const trimDescription = (text, maxLength = 100) => {
     if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchServices();
+        
+        // Normalize dynamic API data to ensure correct image path and fields
+        const normalizedData = data.map(s => {
+          let imagePath = '';
+          if (s.images) {
+            const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
+            imagePath = firstImage ? `http://localhost:3000/uploads/${firstImage}` : '';
+          } else {
+            imagePath = s.image || '';
+          }
+          return {
+            ...s,
+            image: imagePath
+          };
+        });
+        
+        setServices(normalizedData);
+      } catch (err) {
+        console.error('Error fetching services from API:', err);
+        setError('Unable to load services from the backend. Displaying fallback services.');
+        
+        // Keep fallbackServices as backup only if API fails
+        const normalizedFallback = fallbackServices.map(s => ({
+          ...s,
+          image: s.image || ''
+        }));
+        setServices(normalizedFallback);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
 
   return (
     <section id="services">
@@ -19,12 +65,29 @@ const Services = ({ services, loading, onNavigateDetail }) => {
           </p>
         </div>
 
+        {error && (
+          <div className="services-error-banner" style={{
+            background: 'rgba(185, 74, 26, 0.08)',
+            border: '1px solid rgba(185, 74, 26, 0.2)',
+            color: 'var(--rust)',
+            padding: '12px 24px',
+            borderRadius: 'var(--radius)',
+            maxWidth: 'var(--max)',
+            margin: '0 auto 24px auto',
+            textAlign: 'center',
+            fontSize: '14px',
+            fontFamily: 'var(--body)'
+          }}>
+            ⚠️ <strong>Notice:</strong> {error}
+          </div>
+        )}
+
         <div className="services-grid" id="servicesGrid">
           {loading ? (
-            // Render 6 skeleton cards while loading
-            Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="skeleton service-skeleton"></div>
-            ))
+            <div className="services-loading">
+              <div className="services-loading-spinner"></div>
+              <span>Loading services...</span>
+            </div>
           ) : services.length === 0 ? (
             <div className="services-error" style={{ gridColumn: '1/-1' }}>
               <div className="services-error-icon">⚠️</div>
@@ -36,7 +99,6 @@ const Services = ({ services, loading, onNavigateDetail }) => {
               const serviceTitle = s.title || s.name || 'Untitled Service';
               const serviceCategory = s.category || 'Fabrication';
               const serviceDesc = s.shortDescription || s.description || s.desc || '';
-              // Parents (App.jsx) fetches and normalizes the image URLs already
               const imageUrl = s.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80';
 
               return (

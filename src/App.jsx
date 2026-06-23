@@ -11,26 +11,46 @@ import DetailedView from './sections/DetailedView';
 import ServiceDetail from './sections/ServiceDetail';
 
 // Data imports
-import { companyInfo as staticCompanyInfo } from './data/companyInfo';
-import { fallbackServices } from './data/services';
 import { projectsData } from './data/projects';
+import { fallbackServices } from './data/services';
 
-export const API_BASE_URL = "https://dashboard-management-u6vj.onrender.com";
+const defaultCompanyDetails = {
+  name: "RRventures",
+  tagline: "Structural Fabrication Works",
+  heroSlogan: "Built to carry the hardest loads.",
+  heroDescription: "RRventures specializes in heavy vehicle body fabrication, tankers, trailers, and custom industrial structures — engineered to perform.",
+  phone: "+91 00000 00000",
+  email: "info@rrventures.com",
+  address: "RRventures Fabrication Yard",
+  apiBase: "http://localhost:3000",
+  stats: [
+    { label: "Service Types", value: "10+" },
+    { label: "Units Delivered", value: "500+" },
+    { label: "Years Experience", value: "15+" }
+  ],
+  socials: {
+    facebook: "#",
+    twitter: "#",
+    linkedin: "#",
+    instagram: "#"
+  }
+};
+
+export const API_BASE_URL = "http://localhost:3000";
 
 // Home Page Layout Component
-const HomeLayout = ({ companyDetails, services, loadingServices }) => {
+const HomeLayout = ({ companyDetails, services, loadingServices, projects, loadingProjects }) => {
   const navigate = useNavigate();
   return (
     <>
       <Hero companyDetails={companyDetails} />
       <Services 
-        services={services} 
-        loading={loadingServices} 
         onNavigateDetail={(id) => navigate(`/services/${id}`)} 
       />
       <About companyDetails={companyDetails} />
       <Projects 
-        projects={projectsData} 
+        projects={projects} 
+        loading={loadingProjects}
         onNavigateDetail={(id) => navigate(`/projects/${id}`)} 
       />
       <Contact companyDetails={companyDetails} services={services} />
@@ -39,14 +59,14 @@ const HomeLayout = ({ companyDetails, services, loadingServices }) => {
 };
 
 // Route wrapper for Project Details
-const ProjectDetailRoute = ({ services, companyDetails }) => {
+const ProjectDetailRoute = ({ projects, services, companyDetails }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   return (
     <DetailedView 
       itemId={id} 
       itemType="project" 
-      projects={projectsData}
+      projects={projects}
       services={services}
       onBack={() => navigate('/')}
       apiBase={companyDetails.apiBase}
@@ -57,7 +77,9 @@ const ProjectDetailRoute = ({ services, companyDetails }) => {
 function App() {
   const [services, setServices] = useState([]);
   const [loadingServices, setLoadingServices] = useState(true);
-  const [companyDetails, setCompanyDetails] = useState(staticCompanyInfo);
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [companyDetails, setCompanyDetails] = useState(defaultCompanyDetails);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -111,14 +133,73 @@ function App() {
         });
         setServices(normalizedData);
       } catch (err) {
-        //console.warn('[API PREPARATION] Services API unavailable, loading fallback datasets.');
-        // setServices(fallbackServices);
+        console.warn('[API PREPARATION] Services API unavailable, loading fallback datasets.', err);
+        const normalizedFallback = fallbackServices.map(s => ({
+          ...s,
+          image: s.image || ''
+        }));
+        setServices(normalizedFallback);
       } finally {
         setLoadingServices(false);
       }
     };
 
     fetchServicesList();
+  }, []);
+
+  // 3. Fetch Dynamic Projects from Admin Dashboard
+  useEffect(() => {
+    const fetchProjectsList = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/projects/public`);
+        if (!res.ok) throw new Error('API error');
+        const json = await res.json();
+        const data = json.data || json;
+        const normalizedData = data.map(p => {
+          let imagePath = '';
+          if (p.image) {
+            imagePath = p.image.startsWith('http') ? p.image : `${API_BASE_URL}/uploads/${p.image}`;
+          } else {
+            imagePath = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';
+          }
+          const galleryPaths = p.gallery 
+            ? p.gallery.map(img => img.startsWith('http') ? img : `${API_BASE_URL}/uploads/${img}`)
+            : [imagePath];
+
+          // Specifications parsing safely
+          let specs = p.specifications;
+          if (specs && typeof specs === 'string') {
+            try {
+              specs = JSON.parse(specs);
+            } catch (e) {
+              specs = {};
+            }
+          }
+
+          return {
+            ...p,
+            id: p._id || p.id,
+            image: imagePath,
+            gallery: galleryPaths,
+            features: p.category || 'Fabrication',
+            specifications: specs || {}
+          };
+        });
+        setProjects(normalizedData);
+      } catch (err) {
+        console.warn('[API PREPARATION] Projects API unavailable. Using fallback projects data.');
+        const normalizedFallback = projectsData.map(p => ({
+          ...p,
+          id: p._id || p.id || p.id,
+          features: p.category || 'Fabrication'
+        }));
+        setProjects(normalizedFallback);
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+
+    fetchProjectsList();
   }, []);
 
   // 3. Scroll to section when returning to Home Page via navigation state
@@ -155,11 +236,14 @@ function App() {
             companyDetails={companyDetails} 
             services={services} 
             loadingServices={loadingServices} 
+            projects={projects}
+            loadingProjects={loadingProjects}
           />
         } />
         <Route path="/services/:id" element={<ServiceDetail />} />
         <Route path="/projects/:id" element={
           <ProjectDetailRoute 
+            projects={projects}
             services={services} 
             companyDetails={companyDetails} 
           />
