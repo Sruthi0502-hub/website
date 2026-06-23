@@ -65,20 +65,32 @@ const Contact = ({ companyDetails, services }) => {
 
     setLoading(true);
 
+    // FIX: Backend structure ke exact key casing (Name vs name) ko map kiya h
+    const payload = {
+      Name: name.trim(), // Capital 'N' strictly for backend validation match
+      email: email.trim(),
+      service: service,
+    };
+
+    // Optional fields tabhi bhejenge jab unme real data ho (taaki backend validations clear hon)
+    if (phone && phone.trim() !== '') {
+      payload.phone = phone.trim();
+    }
+    if (message && message.trim() !== '') {
+      payload.message = message.trim();
+    }
+
+    // Trailing slash clean-up safety rule
+    const cleanBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+
     try {
-      const res = await fetch(`${API_BASE_URL}/query/create-query`, {
+      const res = await fetch(`${cleanBaseUrl}/query/create-query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          Name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          message: formData.message,
-          service: formData.service
-        })
+        body: JSON.stringify(payload)
       });
 
       const responseData = await res.json().catch(() => ({}));
