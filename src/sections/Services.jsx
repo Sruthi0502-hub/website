@@ -1,52 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../App';
+import React from 'react';
 import '../styles/Services.css';
 
-const Services = ({ onNavigateDetail }) => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// 🟢 अब यह खुद फ़ेच नहीं करेगा, सीधे App.jsx से आ रहे 'services' और 'loading' को यूज़ करेगा
+const Services = ({ services, loading, onNavigateDetail }) => {
 
   const trimDescription = (text, maxLength = 100) => {
     if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
-
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch(`${API_BASE_URL}/provideservices/public`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        const servicesList = data.data || data;
-
-        // Normalize dynamic API data to ensure correct image path and fields
-        const normalizedData = servicesList.map(s => {
-          return {
-            _id: s._id || s.id,
-            title: s.title,
-            shortDescription: s.shortDescription,
-            images: s.images
-          };
-        });
-
-        setServices(normalizedData);
-      } catch (err) {
-        console.error('Error fetching services from API:', err);
-        setError('Unable to load services. Please try again later.');
-        setServices([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadServices();
-  }, []);
 
   return (
     <section id="services">
@@ -65,58 +27,44 @@ const Services = ({ onNavigateDetail }) => {
               <div className="services-loading-spinner"></div>
               <span>Loading services...</span>
             </div>
-          ) : error ? (
-            <div className="services-error" style={{ gridColumn: '1/-1' }}>
-              <div className="services-error-icon">⚠️</div>
-              <span>{error}</span>
-            </div>
           ) : services.length === 0 ? (
             <div className="services-error" style={{ gridColumn: '1/-1' }}>
               <div className="services-error-icon">⚠️</div>
-              <span>No services available right now. Please check back later.</span>
+              <span>No services available right now.</span>
             </div>
           ) : (
             services.map((s) => {
-              const serviceId = s._id;
-              const serviceTitle = s.title || 'Untitled Service';
-              const serviceDesc = s.shortDescription || '';
-              const firstImage = s.images?.[0];
+              // 🟢 App.jsx से आ रहा क्लीन URL सीधे यूज़ करें
+              const serviceImage = s.images;
 
               return (
                 <div
-                  key={serviceId}
+                  key={s._id}
                   className="service-card"
-                  onClick={() => onNavigateDetail(serviceId)}
+                  onClick={() => onNavigateDetail(s._id)}
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="service-image-container">
-                    {firstImage ? (
+                    {serviceImage ? (
                       <img
-                        src={`${API_BASE_URL}/uploads/${firstImage}`}
-                        alt={serviceTitle}
+                        src={serviceImage} // 🟢 सीधे फुल पाथ रेंडर होगा
+                        alt={s.title}
                         className="service-card-image"
                       />
                     ) : (
                       <div className="service-card-placeholder" style={{
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: '#e5e7eb',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#9ca3af',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        fontFamily: 'var(--display)'
+                        width: '100%', height: '100%', backgroundColor: '#e5e7eb',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#9ca3af', fontSize: '14px', fontWeight: '500'
                       }}>
                         No Image
                       </div>
                     )}
                   </div>
                   <div className="service-card-content">
-                    <h3 className="service-title">{serviceTitle}</h3>
+                    <h3 className="service-title">{s.title || 'Untitled Service'}</h3>
                     <p className="service-description">
-                      {trimDescription(serviceDesc, 100)}
+                      {trimDescription(s.shortDescription, 100)}
                     </p>
                     <div className="service-action-link">
                       View Specifications →

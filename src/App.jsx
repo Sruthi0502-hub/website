@@ -106,6 +106,7 @@ function App() {
   }, []);
 
   // 2. Fetch Dynamic Services
+  // 🟢 App.jsx के अंदर Services फ़ेच करने वाला हिस्सा
   useEffect(() => {
     const fetchServicesList = async () => {
       try {
@@ -117,17 +118,30 @@ function App() {
         const normalizedData = data.map(s => {
           let imagePath = '';
           if (s.images) {
+            // अगर एरे है तो पहली इमेज लो, नहीं तो स्ट्रिंग को सीधे इस्तेमाल करो
             const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
-            imagePath = firstImage.startsWith('http') ? firstImage : `${API_BASE_URL}/uploads/${firstImage}`;
-          } else {
-            imagePath = s.images || '';
+
+            if (firstImage.startsWith('http://') || firstImage.startsWith('https://')) {
+              imagePath = firstImage;
+            } else {
+              // 🛠️ डबल स्लैश // से बचाने के लिए क्लीनअप सेफ्टी रूल
+              const cleanPath = firstImage.startsWith('/') ? firstImage.slice(1) : firstImage;
+              const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+              imagePath = `${baseUrl}/uploads/${cleanPath}`;
+            }
           }
-          return { ...s, images: imagePath };
+
+          return {
+            ...s,
+            _id: s._id || s.id,
+            images: imagePath // अब इसमें हमेशा एक साफ़ सुथरा फुल URL रहेगा
+          };
         });
+
         setServices(normalizedData);
       } catch (err) {
         console.error('Services fetch error:', err);
-        setServices([]); // Empty array standard error state triggers
+        setServices([]);
       } finally {
         setLoadingServices(false);
       }
@@ -135,6 +149,7 @@ function App() {
 
     fetchServicesList();
   }, []);
+
 
   // 3. Fetch Dynamic Projects
   useEffect(() => {
