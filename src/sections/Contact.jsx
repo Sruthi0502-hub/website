@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Contact.css';
 import { API_BASE_URL } from '../App';
 
-const Contact = ({ companyDetails, services = [] }) => {
+const Contact = ({ companyDetails, services }) => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -12,6 +12,30 @@ const Contact = ({ companyDetails, services = [] }) => {
   });
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [localServices, setLocalServices] = useState(services || []);
+
+  useEffect(() => {
+    if (services && services.length > 0) {
+      setLocalServices(services);
+    }
+  }, [services]);
+
+  useEffect(() => {
+    if (!localServices || localServices.length === 0) {
+      const fetchServices = async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/provideservices/public`);
+          if (!res.ok) throw new Error('API error');
+          const json = await res.json();
+          const data = json.data || json;
+          setLocalServices(data);
+        } catch (err) {
+          console.error('Failed to fetch dropdown services in Contact:', err);
+        }
+      };
+      fetchServices();
+    }
+  }, [localServices]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,13 +84,19 @@ const Contact = ({ companyDetails, services = [] }) => {
     const cleanBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
 
     try {
-      const res = await fetch(`${cleanBaseUrl}/query/create-query`, {
+      const res = await fetch(`${API_BASE_URL}/query/create-query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          Name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          service: formData.service
+        })
       });
 
       const responseData = await res.json().catch(() => ({}));
@@ -79,11 +109,10 @@ const Contact = ({ companyDetails, services = [] }) => {
         throw new Error(errMsg);
       }
 
-      showToast('Enquiry sent! We will get back to you soon.', 'success');
+      showToast('Thank you! We will get back to you soon.', 'success');
       setFormData({ name: '', phone: '', email: '', service: '', message: '' });
     } catch (err) {
-      console.error("Submission Error Details:", err.message);
-      showToast(err.message || 'Error submitting query.', 'error');
+      showToast('Something went wrong. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -179,10 +208,8 @@ const Contact = ({ companyDetails, services = [] }) => {
                 required
               >
                 <option value="">Select a service…</option>
-                {services.map((s) => (
-                  <option key={s._id || s.id} value={s._id || s.id}>
-                    {s.name || s.title}
-                  </option>
+                {localServices.map((s) => (
+                  <option key={s._id} value={s._id}>{s.title}</option>
                 ))}
               </select>
             </div>

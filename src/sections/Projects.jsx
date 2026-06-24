@@ -13,15 +13,15 @@ const Projects = ({ projects, loading, onNavigateDetail }) => {
           {loading ? (
             // Render 6 skeleton cards while loading
             Array.from({ length: 6 }).map((_, idx) => (
-              <div 
-                key={idx} 
-                className="gallery-item skeleton" 
-                style={{ 
-                  height: '240px', 
-                  backgroundColor: 'var(--gray-100)', 
+              <div
+                key={idx}
+                className="gallery-item skeleton"
+                style={{
+                  height: '240px',
+                  backgroundColor: 'var(--gray-100)',
                   borderRadius: 'var(--radius)',
                   opacity: 0.7
-                }} 
+                }}
               />
             ))
           ) : projects.length === 0 ? (
@@ -35,7 +35,7 @@ const Projects = ({ projects, loading, onNavigateDetail }) => {
                 className="gallery-item"
                 onClick={() => onNavigateDetail(item.id)}
                 style={{
-                  backgroundImage: `url(${item.image})`,
+                  backgroundImage: `url(${item.images})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
