@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/ServiceDetail.css';
 import { API_BASE_URL } from '../App';
+import { getServiceFallbackImage } from '../utils/imageFallback';
+
 
 const ServiceDetail = () => {
   const { id } = useParams();
@@ -76,7 +78,7 @@ const ServiceDetail = () => {
         <div className="service-detail-content">
           <h1 className="service-detail-title">{titleText}</h1>
 
-          {service.images && Array.isArray(service.images) && service.images.length > 0 && (
+          {service.images && Array.isArray(service.images) && service.images.length > 0 ? (
             <div className="service-detail-gallery" style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -89,6 +91,10 @@ const ServiceDetail = () => {
                   key={index}
                   src={`${API_BASE_URL}/uploads/${image}`}
                   alt={`${service.title}-${index}`}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = getServiceFallbackImage(service.title);
+                  }}
                   style={{
                     width: '100%',
                     height: '180px',
@@ -98,6 +104,26 @@ const ServiceDetail = () => {
                   }}
                 />
               ))}
+            </div>
+          ) : (
+            <div className="service-detail-gallery" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: '16px',
+              marginTop: '16px',
+              marginBottom: '24px'
+            }}>
+              <img
+                src={getServiceFallbackImage(service.title)}
+                alt={service.title}
+                style={{
+                  width: '100%',
+                  height: '180px',
+                  objectFit: 'cover',
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--gray-200)'
+                }}
+              />
             </div>
           )}
 

@@ -1,5 +1,7 @@
 import React from 'react';
 import '../styles/Services.css';
+import { getServiceFallbackImage } from '../utils/imageFallback';
+
 
 // 🟢 अब यह खुद फ़ेच नहीं करेगा, सीधे App.jsx से आ रहे 'services' और 'loading' को यूज़ करेगा
 const Services = ({ services, loading, onNavigateDetail }) => {
@@ -45,21 +47,15 @@ const Services = ({ services, loading, onNavigateDetail }) => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="service-image-container">
-                    {serviceImage ? (
-                      <img
-                        src={serviceImage} // 🟢 सीधे फुल पाथ रेंडर होगा
-                        alt={s.title}
-                        className="service-card-image"
-                      />
-                    ) : (
-                      <div className="service-card-placeholder" style={{
-                        width: '100%', height: '100%', backgroundColor: '#e5e7eb',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#9ca3af', fontSize: '14px', fontWeight: '500'
-                      }}>
-                        No Image
-                      </div>
-                    )}
+                    <img
+                      src={serviceImage ? serviceImage : getServiceFallbackImage(s.title)}
+                      alt={s.title || 'Untitled Service'}
+                      className="service-card-image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = getServiceFallbackImage(s.title);
+                      }}
+                    />
                   </div>
                   <div className="service-card-content">
                     <h3 className="service-title">{s.title || 'Untitled Service'}</h3>

@@ -11,6 +11,8 @@ import {
 } from 'react-icons/fa';
 import './DetailedView.css';
 import { API_BASE_URL } from '../App';
+import { getServiceFallbackImage } from '../utils/imageFallback';
+
 
 const useEnquiryForm = (itemName) => {
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
@@ -181,16 +183,22 @@ const DetailedView = ({ itemId, itemType, projects, services, onBack }) => {
 
   return (
     <div className="image-container">
-      {/* Agar activeImage hai, tabhi <img> tag screen par aayega, nahi toh kuch nahi dikhega */}
       {activeImage ? (
         <img
           src={activeImage}
           alt="Service Dynamic Preview"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = getServiceFallbackImage(titleText);
+          }}
           style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
         />
       ) : (
-        // Agar tum chaho toh yahan koi blank div ya text daal sakte ho, ya ise bhi khali chhod sakte ho
-        <div className="no-image-placeholder">No image uploaded yet</div>
+        <img
+          src={getServiceFallbackImage(titleText)}
+          alt="Service Dynamic Preview"
+          style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+        />
       )}
     </div>
   );
