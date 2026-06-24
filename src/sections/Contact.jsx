@@ -65,14 +65,12 @@ const Contact = ({ companyDetails, services }) => {
 
     setLoading(true);
 
-    // FIX: Backend structure ke exact key casing (Name vs name) ko map kiya h
     const payload = {
-      Name: name.trim(), // Capital 'N' strictly for backend validation match
+      Name: name.trim(),
       email: email.trim(),
       service: service,
     };
 
-    // Optional fields tabhi bhejenge jab unme real data ho (taaki backend validations clear hon)
     if (phone && phone.trim() !== '') {
       payload.phone = phone.trim();
     }
@@ -80,7 +78,6 @@ const Contact = ({ companyDetails, services }) => {
       payload.message = message.trim();
     }
 
-    // Trailing slash clean-up safety rule
     const cleanBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
 
     try {
@@ -96,7 +93,6 @@ const Contact = ({ companyDetails, services }) => {
       const responseData = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        // Agar fir bhi server koi dynamic error array bhejta h toh use extract karo
         const errMsg = Array.isArray(responseData.message)
           ? responseData.message.join(', ')
           : (responseData.message || 'Submission failed');
@@ -124,25 +120,34 @@ const Contact = ({ companyDetails, services }) => {
             </p>
 
             <div className="contact-info">
+              {/* 🟢 OR (||) Conditions यहाँ जोड़ी गई हैं */}
               <div className="contact-item">
                 <div className="contact-item-icon">📍</div>
                 <div>
                   <div className="contact-item-label">Location</div>
-                  <div className="contact-item-value">{companyDetails?.address}</div>
+                  <div className="contact-item-value">
+                    {companyDetails?.address || 'Bengaluru, India'}
+                  </div>
                 </div>
               </div>
+
               <div className="contact-item">
                 <div className="contact-item-icon">📞</div>
                 <div>
                   <div className="contact-item-label">Phone</div>
-                  <div className="contact-item-value">{companyDetails?.phone}</div>
+                  <div className="contact-item-value">
+                    {companyDetails?.phone || '+91 98765 43210'} {/* अपना सही नंबर यहाँ लिख लें */}
+                  </div>
                 </div>
               </div>
+
               <div className="contact-item">
                 <div className="contact-item-icon">✉️</div>
                 <div>
                   <div className="contact-item-label">Email</div>
-                  <div className="contact-item-value">{companyDetails?.email}</div>
+                  <div className="contact-item-value">
+                    {companyDetails?.email || 'rrventure@gmail.com'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -203,7 +208,10 @@ const Contact = ({ companyDetails, services }) => {
               >
                 <option value="">Select a service…</option>
                 {localServices.map((s) => (
-                  <option key={s._id} value={s._id}>{s.title}</option>
+                  // 🟢 s._id || s.id किया ताकि लोकल डेटा से भी क्रैश न हो
+                  <option key={s._id || s.id} value={s._id || s.id}>
+                    {s.title}
+                  </option>
                 ))}
               </select>
             </div>
