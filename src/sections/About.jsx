@@ -7,9 +7,7 @@ const About = () => {
       <div className="section-inner">
         <div className="about-grid">
           <div className="about-visual">
-            <div className="about-visual-grid"></div>
-            <div className="about-visual-label">RR</div>
-            <div className="about-badge">Est. RRventures</div>
+            <img src="/rr-logo.png" alt="RR Ventures Logo" className="about-logo-img" />
           </div>
           <div>
             <div className="section-eyebrow">Who We Are</div>

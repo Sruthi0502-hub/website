@@ -10,7 +10,7 @@
 }
  
 .about-visual {
-  background: var(--steel);
+  background: var(--gray-50);
   border-radius: var(--radius);
   aspect-ratio: 4/3;
   position: relative;
@@ -19,41 +19,13 @@
   align-items: center;
   justify-content: center;
 }
- 
-.about-visual-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  z-index: 1;
-}
- 
-.about-visual-label {
-  font-family: var(--display);
-  font-size: 80px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.06);
-  position: absolute;
-  letter-spacing: -4px;
-  user-select: none;
-  z-index: 2;
-}
- 
-.about-badge {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: var(--rust);
-  color: var(--white);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: var(--radius);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  z-index: 3;
+
+.about-logo-img {
+  width: 80%;
+  max-width: 400px;
+  object-fit: contain;
+  display: block;
+  margin: auto;
 }
  
 .about-points {
