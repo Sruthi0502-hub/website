@@ -120,9 +120,9 @@ function App() {
             const firstImage = Array.isArray(s.images) ? s.images[0] : s.images;
             imagePath = firstImage.startsWith('http') ? firstImage : `${API_BASE_URL}/uploads/${firstImage}`;
           } else {
-            imagePath = s.image || '';
+            imagePath = s.images || '';
           }
-          return { ...s, image: imagePath };
+          return { ...s, images: imagePath };
         });
         setServices(normalizedData);
       } catch (err) {
@@ -145,17 +145,33 @@ function App() {
         const json = await res.json();
         const data = json.data || json;
 
-        const normalizedData = data.map(p => {
-          let imagePath = '';
-          if (p.image) {
-            imagePath = p.image.startsWith('http') ? p.image : `${API_BASE_URL}/uploads/${p.image}`;
-          } else {
-            imagePath = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';
-          }
-          const galleryPaths = p.gallery
-            ? p.gallery.map(img => img.startsWith('http') ? img : `${API_BASE_URL}/uploads/${img}`)
-            : [imagePath];
+        // URL को सुरक्षित रखने के लिए हेल्पर फंक्शन (डबल स्लैश // से बचाने के लिए)
+        const cleanImageUrl = (path) => {
+          if (!path) return '';
+          if (path.startsWith('http://') || path.startsWith('https://')) return path;
 
+          const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+          const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+
+          return `${baseUrl}/uploads/${cleanPath}`;
+        };
+
+        const normalizedData = data.map(p => {
+          // अगर p.image है तो URL बनेगा, नहीं तो खाली स्ट्रिंग ('') रहेगी
+          const imagePath = p.image ? cleanImageUrl(p.image) : '';
+
+          // गैलरी एरे को सेफली हैंडल करना (अगर स्ट्रिंग आए तो पार्स करना)
+          let rawGallery = p.gallery;
+          if (rawGallery && typeof rawGallery === 'string') {
+            try { rawGallery = JSON.parse(rawGallery); } catch (e) { rawGallery = []; }
+          }
+
+          // अगर गैलरी में इमेजेस हैं तो उनका URL बनाएं, नहीं तो खाली एरे [] रखें
+          const galleryPaths = Array.isArray(rawGallery) && rawGallery.length > 0
+            ? rawGallery.map(img => cleanImageUrl(img))
+            : (imagePath ? [imagePath] : []); // अगर गैलरी खाली है पर मुख्य इमेज है, तो उसे डालें
+
+          // स्पेसिफिकेशन्स पार्स करना
           let specs = p.specifications;
           if (specs && typeof specs === 'string') {
             try { specs = JSON.parse(specs); } catch (e) { specs = {}; }
@@ -170,10 +186,11 @@ function App() {
             specifications: specs || {}
           };
         });
+
         setProjects(normalizedData);
       } catch (err) {
         console.error('Projects fetch error:', err);
-        setProjects([]); // 🔴 Fallback removed, database data only
+        setProjects([]);
       } finally {
         setLoadingProjects(false);
       }
